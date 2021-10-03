@@ -83,4 +83,7 @@ async function main() {
   await Promise.all(prs.map(pr => registerAction(pr, client)))
 }
 
-main().catch(err => `autoupdate-branch action failed: ${err}`)
+main().catch(err => {
+  console.error('autoupdate-branch action failed:', err)
+  process.exitCode = 1
+})
