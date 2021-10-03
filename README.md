@@ -7,9 +7,10 @@ A github action to auto update branches (with enabled auto merge option) with ba
 Action can do great work with Github automerge feature: [Automatically merging a pull request
 ](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/automatically-merging-a-pull-request)
 
-
 ## Usage
+
 - Add workflow to setup Github Actions:
+
 ```yaml
 jobs:
   update-branches:
@@ -21,14 +22,17 @@ jobs:
         uses: brainly/autoupdate-branch
         id: autoUpdateBranch
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          requiredApprovals: 1 #Number of required approvals before branch should be updated
-
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          requiredApprovals: 1 # Number of required approvals before branch should be updated
+          limit: 10 # Maximum number of branches updated in one run
 ```
+
 - PR which has enabled auto merge will be automatically updated
 
 ## Outputs
+
 This action also returns some output in case you would like to use this in your workflow:
+
 ```yaml
 outputs:
   hasConflicts:

@@ -74,6 +74,7 @@ async function registerAction(
 
 async function main() {
   const token = core.getInput('repo-token')
+  const limit = parseInt(core.getInput('limit'), 10)
   const client = getOctokit(token)
   const baseBranch = context.payload.ref
 
@@ -96,7 +97,13 @@ async function main() {
     Get details of Pull Requests and wait
     till all of them will be executed
    */
-  await Promise.all(prs.map(pr => registerAction(pr, client)))
+  for (const [index, pr] of prs.entries()) {
+    await registerAction(pr, client)
+    if (limit && limit !== -1 && index === limit) {
+      console.warn(`Limit of ${limit} pull requests hit, stopping.`)
+      break
+    }
+  }
 }
 
 main().catch(err => {
