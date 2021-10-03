@@ -1,8 +1,13 @@
 import * as core from '@actions/core'
 import {getOctokit, context} from '@actions/github'
+import {RestEndpointMethodTypes} from '@octokit/rest'
+import {GitHub} from '@actions/github/lib/utils'
 import {wait} from './utils/wait'
 
-async function getPRDetails(pr, client) {
+async function getPRDetails(
+  pr: RestEndpointMethodTypes['pulls']['list']['response']['data'][number],
+  client: InstanceType<typeof GitHub>
+): Promise<RestEndpointMethodTypes['pulls']['get']['response']> {
   await wait(500)
   const details = await client.pulls.get({
     ...context.repo,
@@ -16,9 +21,15 @@ async function getPRDetails(pr, client) {
   }
 }
 
-async function registerAction(pr, client) {
+async function registerAction(
+  pr: RestEndpointMethodTypes['pulls']['list']['response']['data'][number],
+  client: InstanceType<typeof GitHub>
+) {
   const {data} = await getPRDetails(pr, client)
-  const requiredApprovals = parseInt(core.getInput('requiredApprovals') || '0', 10)
+  const requiredApprovals = parseInt(
+    core.getInput('requiredApprovals') || '0',
+    10
+  )
 
   if (requiredApprovals) {
     const {data: reviews} = await client.pulls.listReviews({
@@ -30,16 +41,21 @@ async function registerAction(pr, client) {
 
     if (approvals.length < requiredApprovals) {
       console.log(`PR doesn't have ${requiredApprovals} approvals.`)
-      return;
+      return
     }
   }
 
   if (data.mergeable) {
+    console.log('Updating PR', pr.html_url)
     await client.pulls.updateBranch({
       ...context.repo,
       pull_number: pr.number
     })
   } else {
+    console.log(
+      'Not updating pull request because it has conflicts:',
+      pr.html_url
+    )
     core.setOutput('hasConflicts', true)
     core.setOutput(
       'conflictedPullRequestJSON',
